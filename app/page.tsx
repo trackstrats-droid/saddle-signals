@@ -7,6 +7,7 @@ import saddleSignalsLogo from "../public/saddle-signals.png";
 
 type DayKey = "today" | "tomorrow";
 type AlertFlag = "upgrade" | "claimer";
+type SortKey = "card" | "time_asc" | "time_desc" | "odds_asc" | "odds_desc" | "sr_desc" | "sr_asc";
 type RacingData = typeof fallbackData;
 type Alert = (typeof fallbackData.tomorrow.flags)[number] & { silkUrl?: string };
 
@@ -24,6 +25,7 @@ export default function Home() {
   const [jockey, setJockey] = useState("all");
   const [jockeyStrikeRate, setJockeyStrikeRate] = useState("all");
   const [marketPosition, setMarketPosition] = useState("all");
+  const [sortBy, setSortBy] = useState<SortKey>("card");
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/racing-data", { signal: controller.signal })
@@ -48,6 +50,20 @@ export default function Home() {
     (jockey === "all" || item.todayJockey === jockey) &&
     (jockeyStrikeRate === "all" || (item.jockey30Day?.strikeRate ?? -1) >= Number(jockeyStrikeRate)) &&
     (marketPosition === "all" || item.marketPosition === marketPosition || (marketPosition === "top3" && item.marketPosition === "favourite"))), [alerts, course, flag, raceType, courseDistance, ltoResult, jockey, jockeyStrikeRate, marketPosition]);
+  const sorted = useMemo(() => {
+    const timeValue = (value: string) => {
+      const [hours, minutes] = value.split(":").map(Number);
+      return (hours < 10 ? hours + 12 : hours) * 60 + minutes;
+    };
+    const items = [...filtered];
+    if (sortBy === "time_asc") return items.sort((a, b) => timeValue(a.offTime) - timeValue(b.offTime));
+    if (sortBy === "time_desc") return items.sort((a, b) => timeValue(b.offTime) - timeValue(a.offTime));
+    if (sortBy === "odds_asc") return items.sort((a, b) => (a.bestOdds?.decimal ?? Infinity) - (b.bestOdds?.decimal ?? Infinity));
+    if (sortBy === "odds_desc") return items.sort((a, b) => (b.bestOdds?.decimal ?? -1) - (a.bestOdds?.decimal ?? -1));
+    if (sortBy === "sr_desc") return items.sort((a, b) => (b.jockey30Day?.strikeRate ?? -1) - (a.jockey30Day?.strikeRate ?? -1));
+    if (sortBy === "sr_asc") return items.sort((a, b) => (a.jockey30Day?.strikeRate ?? Infinity) - (b.jockey30Day?.strikeRate ?? Infinity));
+    return items;
+  }, [filtered, sortBy]);
   const trackFilter = (filterName: string, value: string) => captureAnalytics("saddle_signals_filter_changed", { filter: filterName, value, day });
   const reset = () => {
     captureAnalytics("saddle_signals_filters_reset", { day, active_filters: activeCount });
@@ -79,8 +95,8 @@ export default function Home() {
         <label>Market position<select value={marketPosition} onChange={(e) => { setMarketPosition(e.target.value); trackFilter("market_position", e.target.value); }}><option value="all">All market positions</option><option value="favourite">Favourite</option><option value="top3">Top 3 in betting</option><option value="midfield">Midfield</option><option value="outsider">Outsider</option></select></label>
       </div></div>
     </section>
-    <section className="results"><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{filtered.length}</span></div></div>
-      {filtered.length ? <div className="cards">{filtered.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>No qualifying booking changes.</strong><p>Try another day or reset the filters.</p><button onClick={reset}>Reset filters</button></div>}
+    <section className="results"><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
+      {sorted.length ? <div className="cards">{sorted.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>No qualifying booking changes.</strong><p>Try another day or reset the filters.</p><button onClick={reset}>Reset filters</button></div>}
     </section>
     <footer><strong>TRACK STRATS // RACING TOOLKIT</strong><span>Saddle Signals</span></footer>
   </main>;
