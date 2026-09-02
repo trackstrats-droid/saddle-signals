@@ -70,6 +70,7 @@
   .mobileNavHeading button{width:40px;height:40px;color:var(--mid);cursor:pointer;background:transparent;border:0;justify-content:center;align-items:center;padding:0;font-size:27px;line-height:1;display:flex}
   .mobileNavDrawer nav{margin-top:18px;display:grid}
   .mobileNavDrawer nav a{border-bottom:1px solid var(--line);min-height:58px;color:var(--deep);justify-content:space-between;align-items:center;font-size:16px;font-weight:750;text-decoration:none;display:flex}
+  .mobileNavDrawer nav .mobileToolkitPlaceholder{border-bottom:1px solid var(--line);min-height:58px;color:#9aa8a4;align-items:center;font-size:16px;font-weight:750;display:flex;cursor:default}
   .mobileNavDrawer nav a span{color:var(--mid);font-size:15px}
   .mobileNavDrawer a:hover,.mobileNavDrawer a:focus-visible{color:var(--mid);outline:none}
   .hero{padding-left:28px;padding-right:28px}
