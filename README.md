@@ -13,6 +13,8 @@ npm run dev
 
 The application reads its shared racing snapshot from `RACING_DATA_API_URL`. Copy `.env.example` to `.env.local` to override the default endpoint locally.
 
+Toolkit login requires `TOOLKIT_LOGIN_URL` and `TOOLKIT_AUTH_SECRET`. Use the same secret as the central Track Strats login service and the other toolkit apps; never commit the real secret. `PUBLIC_APP_URL` fixes login and logout return URLs to the production custom domain.
+
 ## Production
 
 ```bash

@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { publicRequestOrigin } from "../../lib/public-origin";
+import { authServiceUrl } from "../../lib/toolkit-auth";
 
-const LOGIN_SERVICE = "https://login.trackstrats.com/auth/login";
+export const dynamic = "force-dynamic";
 
-export function GET(request: NextRequest) {
-  const origin = process.env.PUBLIC_APP_URL?.replace(/\/$/, "") || request.nextUrl.origin;
-  const returnTo = `${origin}/?auth_event=login_completed`;
-  return NextResponse.redirect(`${LOGIN_SERVICE}?returnTo=${encodeURIComponent(returnTo)}`);
+export function GET(request: Request) {
+  const login = new URL("/auth/login", authServiceUrl());
+  const returnTo = new URL("/", publicRequestOrigin(request));
+  returnTo.searchParams.set("auth_event", "login_completed");
+  login.searchParams.set("returnTo", returnTo.toString());
+  return NextResponse.redirect(login);
 }
