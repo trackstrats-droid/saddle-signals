@@ -10,6 +10,7 @@ type AlertFlag = "upgrade" | "claimer";
 type SortKey = "card" | "time_asc" | "time_desc" | "odds_asc" | "odds_desc" | "sr_desc" | "sr_asc";
 type RacingData = typeof fallbackData;
 type Alert = (typeof fallbackData.tomorrow.flags)[number] & { silkUrl?: string };
+type CustomerSession = { loading: boolean; authenticated: boolean; customer?: { id: string; email?: string; firstName?: string; lastName?: string } };
 
 const labels: Record<AlertFlag, string> = { upgrade: "Jockey upgrade", claimer: "New claimer" };
 const amateurTitle = /^(?:Mr|Mrs|Miss|Ms)\s/i;
@@ -27,6 +28,7 @@ export default function Home() {
   const [marketPosition, setMarketPosition] = useState("all");
   const [sortBy, setSortBy] = useState<SortKey>("card");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [session, setSession] = useState<CustomerSession>({ loading: true, authenticated: false });
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/racing-data", { signal: controller.signal })
@@ -34,6 +36,22 @@ export default function Home() {
       .then((data: RacingData) => setRacingData(data))
       .catch((error) => { if (error.name !== "AbortError") console.warn("Using bundled racing snapshot"); });
     return () => controller.abort();
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/auth/session", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.json())
+      .then((value) => setSession({ ...value, loading: false }))
+      .catch((error) => { if (error.name !== "AbortError") setSession({ loading: false, authenticated: false }); });
+    return () => controller.abort();
+  }, []);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const authEvent = url.searchParams.get("auth_event");
+    if (!authEvent) return;
+    captureAnalytics(`toolkit_${authEvent}`, { source: "saddle_signals" });
+    url.searchParams.delete("auth_event");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   }, []);
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -85,12 +103,12 @@ export default function Home() {
   return <main>
     <header className="masthead">
       <a className="brand" href="#top" aria-label="Track Strats Saddle Signals home"><img src={saddleSignalsLogo.src} alt="Track Strats Saddle Signals"/></a>
-      <nav className="mainNav" aria-label="Main navigation"><span aria-current="page">Saddle Signals</span><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner</a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards</a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop</a></nav>
+      <nav className="mainNav" aria-label="Main navigation"><span aria-current="page">Saddle Signals</span><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner</a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards</a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop</a>{!session.loading && (session.authenticated ? <a href="/auth/logout">Log out{session.customer?.firstName ? ` · ${session.customer.firstName}` : ""}</a> : <a href="/auth/login">Log in</a>)}</nav>
       <button className="mobileNavTrigger" type="button" aria-label="Open navigation" aria-expanded={mobileNavOpen} aria-controls="mobile-navigation" onClick={() => setMobileNavOpen(true)}><span className="mobileMenuIcon" aria-hidden="true"><i/><i/><i/></span></button>
       <div className={`mobileNavOverlay${mobileNavOpen ? " isOpen" : ""}`} aria-hidden={!mobileNavOpen} onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileNavOpen(false); }}>
         <aside className="mobileNavDrawer" id="mobile-navigation" aria-label="Mobile navigation">
           <div className="mobileNavHeading"><strong>Menu</strong><button type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}>×</button></div>
-          <nav><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner<span aria-hidden="true">↗</span></a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards<span aria-hidden="true">↗</span></a><a href="https://aheadofthemark.trackstrats.com" target="_blank" rel="noreferrer">Ahead Of The Mark<span aria-hidden="true">↗</span></a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop<span aria-hidden="true">↗</span></a></nav>
+          <nav><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner<span aria-hidden="true">↗</span></a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards<span aria-hidden="true">↗</span></a><a href="https://aheadofthemark.trackstrats.com" target="_blank" rel="noreferrer">Ahead Of The Mark<span aria-hidden="true">↗</span></a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop<span aria-hidden="true">↗</span></a>{!session.loading && (session.authenticated ? <a className="mobileAccountAction" href="/auth/logout">Log out{session.customer?.firstName ? ` · ${session.customer.firstName}` : ""}<span aria-hidden="true">↗</span></a> : <a className="mobileAccountAction" href="/auth/login">Log in<span aria-hidden="true">↗</span></a>)}</nav>
         </aside>
       </div>
     </header>
@@ -113,7 +131,8 @@ export default function Home() {
         <label>Market position<select value={marketPosition} onChange={(e) => { setMarketPosition(e.target.value); trackFilter("market_position", e.target.value); }}><option value="all">All market positions</option><option value="favourite">Favourite</option><option value="top3">Top 3 in betting</option><option value="midfield">Midfield</option><option value="outsider">Outsider</option></select></label>
       </div></div>
     </section>
-    <section className="results"><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
+    <section className={`results${!session.loading && !session.authenticated ? " isLocked" : ""}`}><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
+      {!session.loading && !session.authenticated && <div className="resultsGate"><section className="authDialog" aria-labelledby="login-title"><h2 id="login-title">See Your Signals</h2><p>Create your free Track Strats Toolkit account or log in to reveal today’s booking signals.</p><a className="authPrimary" href="/auth/login" onClick={() => captureAnalytics("saddle_signals_login_clicked", { location: "results_gate" })}>Log in or create an account</a></section></div>}
       {sorted.length ? <div className="cards">{sorted.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>No qualifying booking changes.</strong><p>Try another day or reset the filters.</p><button onClick={reset}>Reset filters</button></div>}
     </section>
     <footer><strong>TRACK STRATS // RACING TOOLKIT</strong><span>Saddle Signals</span></footer>
