@@ -1,5 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap");
 
+/* Prevent iOS and other mobile browsers rounding native filter controls. */
+.selectGrid select,.sortControl select{border-radius:0;-webkit-border-radius:0}
+
 /* Mirrors the silk treatment used by the Track Strats Racecards. */
 .runnerMain{grid-template-columns:42px 50px minmax(0,1fr) 74px!important}
 .silk{width:45px;height:52px;display:block;position:relative;clip-path:polygon(28% 0,40% 8%,60% 8%,72% 0,100% 20%,84% 42%,75% 35%,75% 100%,25% 100%,25% 35%,16% 42%,0 20%);background:var(--green);filter:drop-shadow(0 2px 2px rgba(7,63,49,.18));flex:0 0 auto}
