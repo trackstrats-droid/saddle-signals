@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import fallbackData from "./racing-data.json";
 import { captureAnalytics } from "./analytics";
+import saddleSignalsLogo from "../public/saddle-signals.png";
 
 type DayKey = "today" | "tomorrow";
 type AlertFlag = "upgrade" | "claimer";
@@ -56,7 +57,7 @@ export default function Home() {
 
   return <main>
     <header className="masthead">
-      <a className="brand" href="#top" aria-label="Track Strats Saddle Signals home"><img src="/saddle-signals.png" alt="Track Strats Saddle Signals"/></a>
+      <a className="brand" href="#top" aria-label="Track Strats Saddle Signals home"><img src={saddleSignalsLogo.src} alt="Track Strats Saddle Signals"/></a>
       <nav className="mainNav" aria-label="Main navigation"><span aria-current="page">Saddle Signals</span><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner</a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards</a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop</a></nav>
     </header>
     <section className="hero" id="top"><div>
