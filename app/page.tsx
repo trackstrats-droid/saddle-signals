@@ -26,6 +26,7 @@ export default function Home() {
   const [jockeyStrikeRate, setJockeyStrikeRate] = useState("all");
   const [marketPosition, setMarketPosition] = useState("all");
   const [sortBy, setSortBy] = useState<SortKey>("card");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/racing-data", { signal: controller.signal })
@@ -34,6 +35,16 @@ export default function Home() {
       .catch((error) => { if (error.name !== "AbortError") console.warn("Using bundled racing snapshot"); });
     return () => controller.abort();
   }, []);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setMobileNavOpen(false); };
+    document.addEventListener("keydown", closeOnEscape);
+    document.body.classList.add("navOpen");
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.classList.remove("navOpen");
+    };
+  }, [mobileNavOpen]);
   const current = racingData[day];
   const alerts = (current.flags as Alert[]).map((item) => amateurTitle.test(item.todayJockey)
     ? { ...item, flags: item.flags.filter((itemFlag) => itemFlag !== "claimer") }
@@ -75,6 +86,13 @@ export default function Home() {
     <header className="masthead">
       <a className="brand" href="#top" aria-label="Track Strats Saddle Signals home"><img src={saddleSignalsLogo.src} alt="Track Strats Saddle Signals"/></a>
       <nav className="mainNav" aria-label="Main navigation"><span aria-current="page">Saddle Signals</span><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner</a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards</a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop</a></nav>
+      <button className="mobileNavTrigger" type="button" aria-label="Open navigation" aria-expanded={mobileNavOpen} aria-controls="mobile-navigation" onClick={() => setMobileNavOpen(true)}><span className="mobileMenuIcon" aria-hidden="true"><i/><i/><i/></span></button>
+      <div className={`mobileNavOverlay${mobileNavOpen ? " isOpen" : ""}`} aria-hidden={!mobileNavOpen} onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileNavOpen(false); }}>
+        <aside className="mobileNavDrawer" id="mobile-navigation" aria-label="Mobile navigation">
+          <div className="mobileNavHeading"><strong>Menu</strong><button type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}>×</button></div>
+          <nav><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner<span aria-hidden="true">↗</span></a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards<span aria-hidden="true">↗</span></a><a href="https://aheadofthemark.trackstrats.com" target="_blank" rel="noreferrer">Ahead Of The Mark<span aria-hidden="true">↗</span></a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop<span aria-hidden="true">↗</span></a></nav>
+        </aside>
+      </div>
     </header>
     <section className="hero" id="top"><div>
       <div className="daySwitch" role="tablist" aria-label="Choose race date">{(["today", "tomorrow"] as DayKey[]).map((item) => <button key={item} role="tab" aria-selected={day === item} onClick={() => changeDay(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}</div>
