@@ -34,15 +34,15 @@ function tool({cookies=jar(),hostname='paceprofiler.trackstrats.com',protocol='h
   vm.createContext(context);vm.runInContext(code,context);
   return {api:context.exports,cookies,window,local,session,poll:()=>poll?.(),block:()=>{noWrites=true;}};
 }
-test('one acceptance is read across all seven tools, survives a new session and has secure one-year scope',()=>{
+test('one shared acceptance spans tools, survives a new session and renews persistent storage',()=>{
   const cookies=jar();const first=tool({cookies});first.api.saveConsent('accepted');
   for (const name of ['racecards','racescanner','saddlesignals','aheadofthemark','furthestfromhome','marketmovers','paceprofiler']) assert.equal(tool({cookies,hostname:name+'.trackstrats.com'}).api.readConsent(),'accepted');
   cookies.newSession();assert.equal(tool({cookies}).api.readConsent(),'accepted');
-  assert.match(cookies.writes.at(-1),/Domain=trackstrats.com; Path=\/; SameSite=Lax; Secure; Max-Age=31536000$/);
+  assert.match(cookies.writes.filter(value=>value.startsWith(key+'=')).at(-1),/Domain=trackstrats.com; Path=\/; SameSite=Lax; Secure; Max-Age=34560000$/);
 });
 test('shared refusal replaces persistent acceptance, survives navigation but not a fresh browser session',()=>{
   const cookies=jar();tool({cookies}).api.saveConsent('accepted');tool({cookies,hostname:'racecards.trackstrats.com'}).api.saveConsent('denied');
-  assert.equal(tool({cookies}).api.readConsent(),'denied');assert.doesNotMatch(cookies.writes.at(-1),/Max-Age|Expires/);
+  assert.equal(tool({cookies}).api.readConsent(),'denied');assert.doesNotMatch(cookies.writes.filter(value=>value.startsWith(key+'=')).at(-1),/Max-Age|Expires/);
   cookies.newSession();assert.equal(tool({cookies}).api.readConsent(),null);
 });
 test('withdrawal in another open tool blocks immediately and synchronises the UI on focus or polling',()=>{
@@ -53,9 +53,36 @@ test('withdrawal in another open tool blocks immediately and synchronises the UI
   second.window.dispatchEvent(new Event('focus'));assert.equal(changes,2);
   cleanup();first.api.saveConsent('accepted');second.poll();assert.equal(changes,2);
 });
-test('legacy tool-specific acceptance never silently becomes collection-wide consent',()=>{
-  const local=store();for(const k of ['racecards_analytics_consent','pace_profiler_analytics_consent','trackstrats_analytics_consent'])local.setItem(k,'accepted');
-  assert.equal(tool({local}).api.readConsent(),null);
+test('legacy acceptance persists on its original tool without granting collection consent',()=>{
+  const local=store();const first=tool({local});
+  local.setItem(first.api.LEGACY_CONSENT_KEY,'accepted');
+  assert.equal(first.api.readConsent(),'accepted');
+  assert.equal(tool({local}).api.readConsent(),'accepted');
+  assert.equal(tool({cookies:first.cookies,hostname:'other.trackstrats.com'}).api.readConsent(),null);
+  assert.equal(first.cookies.writes.length,0);
+});
+test('legacy refusal is session-only, including older permanent essential-only values',()=>{
+  const first=tool();first.local.setItem(first.api.LEGACY_CONSENT_KEY,'accepted');
+  first.session.setItem(first.api.LEGACY_CONSENT_KEY,'denied');assert.equal(first.api.readConsent(),'denied');
+  const old=tool();old.local.setItem(old.api.LEGACY_CONSENT_KEY,'essential');
+  assert.equal(old.api.readConsent(),null);
+  const denied=tool();denied.session.setItem(denied.api.LEGACY_CONSENT_KEY,'denied');assert.equal(denied.api.readConsent(),'denied');
+  assert.equal(tool({local:denied.local,cookies:denied.cookies}).api.readConsent(),null);
+});
+test('a newer shared refusal retires old acceptances even on tools not opened until the next session',()=>{
+  const cookies=jar();const first=tool({cookies});const other=tool({cookies,hostname:'racecards.trackstrats.com'});
+  first.local.setItem(first.api.LEGACY_CONSENT_KEY,'accepted');
+  other.local.setItem(other.api.LEGACY_CONSENT_KEY,'accepted');
+  assert.equal(first.api.readConsent(),'accepted');
+  first.api.saveConsent('denied');cookies.newSession();
+  assert.equal(tool({cookies,local:first.local}).api.readConsent(),null);
+  assert.equal(tool({cookies,local:other.local,hostname:'racecards.trackstrats.com'}).api.readConsent(),null);
+});
+test('shared acceptance takes priority over old session rejection and is renewed once per page',()=>{
+  const cookies=jar();const first=tool({cookies});first.session.setItem(first.api.LEGACY_CONSENT_KEY,'denied');
+  tool({cookies,hostname:'racecards.trackstrats.com'}).api.saveConsent('accepted');
+  assert.equal(first.api.readConsent(),'accepted');const writes=cookies.writes.length;
+  first.api.readConsent();first.api.hasAnalyticsConsent();assert.equal(cookies.writes.length,writes);
 });
 test('preview and lookalike domains never write the shared production cookie',()=>{
   for(const [hostname,protocol] of [['localhost','http:'],['trackstrats.com.evil.test','https:'],['eviltrackstrats.com','https:'],['preview.chatgpt.site','https:'],['racecards.trackstrats.com','http:']]) {
