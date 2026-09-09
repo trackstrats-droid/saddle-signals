@@ -1,4 +1,5 @@
 "use client";
+import {readAngleLink,angleChoice,angleNumber} from './angle-link';
 
 import { useEffect, useMemo, useState } from "react";
 import fallbackData from "./racing-data.json";
@@ -29,6 +30,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<SortKey>("card");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [session, setSession] = useState<CustomerSession>({ loading: true, authenticated: false });
+  useEffect(()=>{const link=readAngleLink();if(!link)return;const f=link.filters;setDay(link.day);setCourse(angleChoice(f.course));setRaceType(angleChoice(f.raceType));setFlag(({ 'Jockey upgrades':'upgrade','New claimers':'claimer'} as Record<string,string>)[f.signal]||'all');setCourseDistance(f.courseForm?.match(/\(([^)]+)\)/)?.[1]||'all');setLtoResult(({ 'LTO winner':'winner','LTO placed':'placed'} as Record<string,string>)[f.ltoResult]||'all');setJockey(angleChoice(f.jockey));setJockeyStrikeRate(angleNumber(f.jockeySr)?String(angleNumber(f.jockeySr)):'all');setMarketPosition(({Favourite:'favourite','Top 3 in betting':'top3',Midfield:'midfield',Outsider:'outsider'} as Record<string,string>)[f.marketPosition]||'all');setSortBy(({ 'Time · earliest first':'time_asc','Time · latest first':'time_desc','Odds · shortest first':'odds_asc','Odds · longest first':'odds_desc','Jockey SR · highest first':'sr_desc','Jockey SR · lowest first':'sr_asc'} as Record<string,SortKey>)[f.sort]||'card');},[]);
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/racing-data", { signal: controller.signal })
