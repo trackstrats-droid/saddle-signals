@@ -1,4 +1,5 @@
 "use client";
+import WorkspaceNavigation from './workspace-navigation';
 import {readAngleLink,angleChoice,angleNumber} from './angle-link';
 
 import { useEffect, useMemo, useState } from "react";
@@ -103,17 +104,10 @@ export default function Home() {
   const changeDay = (next: DayKey) => { captureAnalytics("saddle_signals_day_changed", { from: day, to: next }); setDay(next); reset(); };
 
   return <main>
-    <header className="masthead">
+    <header className="ts-collection-header">
       <a className="brand" href="#top" aria-label="Track Strats Saddle Signals home"><img src={saddleSignalsLogo.src} alt="Track Strats Saddle Signals"/></a>
-      <nav className="mainNav" aria-label="Main navigation"><span aria-current="page">Saddle Signals</span><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner</a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards</a><a href="https://aheadofthemark.trackstrats.com" target="_blank" rel="noreferrer">Ahead Of The Mark</a><a href="https://furthestfromhome.trackstrats.com" target="_blank" rel="noreferrer">Furthest From Home</a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop</a>{!session.loading && (session.authenticated ? <a href="/auth/logout">Log out{session.customer?.firstName ? ` · ${session.customer.firstName}` : ""}</a> : <a href="/auth/login">Log in</a>)}</nav>
-      <button className="mobileNavTrigger" type="button" aria-label="Open navigation" aria-expanded={mobileNavOpen} aria-controls="mobile-navigation" onClick={() => setMobileNavOpen(true)}><span className="mobileMenuIcon" aria-hidden="true"><i/><i/><i/></span></button>
-      <div className={`mobileNavOverlay${mobileNavOpen ? " isOpen" : ""}`} aria-hidden={!mobileNavOpen} onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileNavOpen(false); }}>
-        <aside className="mobileNavDrawer" id="mobile-navigation" aria-label="Mobile navigation">
-          <div className="mobileNavHeading"><strong>Menu</strong><button type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}>×</button></div>
-          <nav><a href="https://racescanner.trackstrats.com" target="_blank" rel="noreferrer">Race Scanner<span aria-hidden="true">↗</span></a><a href="https://racecards.trackstrats.com" target="_blank" rel="noreferrer">Racecards<span aria-hidden="true">↗</span></a><a href="https://aheadofthemark.trackstrats.com" target="_blank" rel="noreferrer">Ahead Of The Mark<span aria-hidden="true">↗</span></a><a href="https://furthestfromhome.trackstrats.com" target="_blank" rel="noreferrer">Furthest From Home<span aria-hidden="true">↗</span></a><a href="https://trackstrats.com" target="_blank" rel="noreferrer">Shop<span aria-hidden="true">↗</span></a><span className="mobileToolkitTeaser" aria-disabled="true">Toolkit<small>Coming soon</small></span>{!session.loading && (session.authenticated ? <a className="mobileAccountAction" href="/auth/logout">Log out{session.customer?.firstName ? ` · ${session.customer.firstName}` : ""}<span aria-hidden="true">🔒</span></a> : <a className="mobileAccountAction" href="/auth/login">Log in<span aria-hidden="true">🔓</span></a>)}</nav>
-        </aside>
-      </div>
-    </header>
+      <WorkspaceNavigation/>
+      </header>
     <section className="hero" id="top"><div>
       <div className="daySwitch" role="tablist" aria-label="Choose race date">{(["today", "tomorrow"] as DayKey[]).map((item) => <button key={item} role="tab" aria-selected={day === item} onClick={() => changeDay(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}</div>
       <p className="eyebrow">{day.toUpperCase()}’S BOOKINGS · {current.races} RACES</p>

@@ -1,0 +1,85 @@
+/* Desktop and landscape tablet pilot; portrait/mobile retain their existing navigation. */
+.ts-collection-header .ts-desktop-tool-navigation{display:none}
+@media (min-width:1200px), (min-width:900px) and (orientation:landscape){
+ .ts-collection-header{gap:24px}
+ .ts-collection-header .existing-tool-navigation{display:none}
+ .ts-collection-header .ts-desktop-tool-navigation{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}
+ .ts-desktop-tool-navigation>a,.ts-toolkit-navigation-trigger>a{display:flex;align-items:center;min-height:44px;padding:0 14px;white-space:nowrap}
+ .ts-collection-header .ts-desktop-tool-navigation a{color:#073f31;font-size:13px;font-weight:700}
+ .ts-collection-header .ts-desktop-tool-navigation .ts-current-tool{color:#00ad69}
+ .ts-desktop-tool-navigation a:hover,.ts-toolkit-navigation-trigger:hover{background:#e9f7f3}
+ .ts-toolkit-navigation{position:relative}
+ .ts-toolkit-navigation-trigger{display:flex;align-items:center}
+ .ts-toolkit-navigation-trigger>a{padding-right:5px}
+ .ts-toolkit-navigation-trigger button{display:grid;place-items:center;min-height:44px;width:30px;border:0;background:transparent;cursor:pointer}
+ .ts-toolkit-navigation-list{position:absolute;top:100%;left:0;min-width:230px;padding:8px;background:white;border:1px solid #d8e7e2;box-shadow:0 12px 28px rgba(7,63,49,.12)}
+ .ts-toolkit-navigation-list[hidden]{display:none}
+ .ts-toolkit-navigation-list a{display:flex;justify-content:space-between;gap:20px;padding:12px;min-height:44px}
+ .ts-toolkit-navigation-list a span{color:#00ad69}
+ .ts-collection-header .ts-desktop-tool-navigation .ts-navigation-account{margin-left:14px;min-height:38px;padding:0 12px;border:1px solid #7fcbb1}
+ .ts-desktop-tool-navigation a:focus-visible,.ts-desktop-tool-navigation button:focus-visible{outline:2px solid #00ad69;outline-offset:2px}
+}
+@media (min-width:900px) and (max-width:1100px) and (orientation:landscape){
+ .ts-collection-header{padding:0 20px;gap:16px}.ts-collection-header .brand img{width:185px}
+ .ts-desktop-tool-navigation>a,.ts-toolkit-navigation-trigger>a{padding-left:10px;padding-right:10px}
+ .ts-toolkit-navigation-trigger>a{padding-right:2px}
+}
+
+/* Shared Track Strats mobile drawer, copied from Furthest From Home. */
+.ts-mobile-nav-trigger,
+.ts-mobile-nav-overlay { display: none; }
+
+@media (max-width:899px), (max-width:1199px) and (orientation:portrait) {
+  body.mobile-nav-open { overflow: hidden; }
+  .ts-collection-header { height: 76px; min-height: 76px; padding: 0 18px; flex-direction: row; align-items: center; gap: 18px; }
+  .brand img { width: min(230px, calc(100vw - 96px)); height: auto; }
+  .ts-collection-header .existing-tool-navigation { display: none; }
+  .ts-mobile-nav-trigger { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 0; background: transparent; color: #073f31; cursor: pointer; }
+  .ts-mobile-menu-icon { display: grid; align-content: center; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 0; border: 0; background: transparent; }
+  .ts-mobile-menu-icon i { display: block; width: 19px; height: 1.5px; background: #00ad69; }
+  .ts-mobile-nav-overlay { display: block; position: fixed; inset: 0; z-index: 50; background: rgba(0, 35, 27, .56); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .24s ease, visibility 0s linear .24s; }
+  .ts-mobile-nav-overlay.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .24s ease; }
+  .ts-mobile-nav-drawer { position: absolute; inset: 0 0 0 auto; display: flex; flex-direction: column; width: min(84vw, 330px); padding: 0 22px 24px; overflow-y: auto; background: white; box-shadow: -24px 0 60px rgba(0, 35, 27, .25); transform: translateX(100%); transition: transform .28s cubic-bezier(.22, .8, .24, 1); }
+  .ts-mobile-nav-overlay.is-open .ts-mobile-nav-drawer { transform: translateX(0); }
+  .ts-mobile-nav-heading { min-height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #00ad69; }
+  .ts-mobile-nav-heading strong { font-size: 15px; font-weight: 850; letter-spacing: .04em; text-transform: uppercase; }
+  .ts-mobile-nav-heading button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; background: transparent; color: #00ad69; font-size: 27px; line-height: 1; cursor: pointer; }
+  .ts-mobile-nav-drawer nav { display: grid; gap: 0; margin-top: 18px; }
+  .ts-mobile-nav-drawer nav a { display: flex; align-items: center; justify-content: space-between; min-height: 58px; border-bottom: 1px solid #d8e7e2; color: #073f31; font-size: 16px; font-weight: 750; text-decoration: none; }
+  .ts-mobile-nav-drawer nav a span { color: #00ad69; font-size: 15px; }
+  .ts-mobile-toolkit-teaser { display: flex; align-items: center; justify-content: space-between; min-height: 58px; border-bottom: 1px solid #d8e7e2; color: #9aa8a3; font-size: 16px; font-weight: 750; cursor: default; }
+  .ts-mobile-toolkit-teaser small { padding: 5px 7px; border-radius: 999px; background: #f0f3f2; color: #7e8c87; font-size: 8px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+  .ts-mobile-nav-drawer nav .ts-mobile-account-action { color: #00ad69; font-weight: 850; }
+  .ts-mobile-nav-drawer nav .ts-mobile-account-lock { color: inherit; font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif; font-size: 16px; line-height: 1; }
+  .ts-mobile-nav-drawer a:hover,
+  .ts-mobile-nav-drawer a:focus-visible { color: #00ad69; outline: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ts-mobile-nav-overlay,
+  .ts-mobile-nav-drawer { transition-duration: 0s; }
+}
+
+@media (max-width:899px), (max-width:1199px) and (orientation:portrait){
+ .ts-mobile-nav-trigger{margin-left:auto;flex-shrink:0}
+ .ts-mobile-toolkit-row{display:flex;border-bottom:1px solid #d8e7e2}
+ .ts-mobile-nav-drawer nav .ts-mobile-toolkit-row>a{flex:1;border:0}
+ .ts-mobile-toolkit-row button{display:grid;place-items:center;width:44px;border:0;background:transparent;color:#00ad69;cursor:pointer}
+ .ts-mobile-toolkit-row button[aria-expanded="true"] svg{transform:rotate(180deg)}
+ .ts-mobile-toolkit-list{padding-left:16px}
+ .ts-mobile-toolkit-list[hidden]{display:none}
+ .ts-mobile-nav-drawer nav .ts-mobile-toolkit-list a{font-size:14px;min-height:48px}
+ .ts-mobile-nav-drawer button:focus-visible{outline:2px solid #00ad69;outline-offset:-2px}
+}
+
+header.ts-collection-header.ts-collection-header{display:flex;align-items:center;justify-content:space-between;gap:24px;height:82px;min-height:82px;max-width:none;width:100%;padding:0 max(28px,calc((100vw - 1280px)/2));background:white;border-bottom:1px solid rgba(7,63,49,.08);position:relative;z-index:35;margin:0;box-sizing:border-box}
+.ts-collection-header>a:first-child{display:flex;align-items:center;flex:0 1 220px;min-width:0}
+.ts-collection-header>a:first-child img{display:block;width:100%;height:auto;max-width:220px;object-fit:contain}
+.ts-desktop-tool-navigation a,.ts-mobile-nav-drawer a{font-family:Roboto,Arial,sans-serif;text-transform:none;letter-spacing:normal;text-decoration:none}
+.ts-collection-header .ts-desktop-tool-navigation a{border-bottom:0;line-height:normal}
+.ts-collection-header .ts-desktop-tool-navigation .ts-current-tool{color:#00ad69}
+.ts-mobile-nav-drawer{box-sizing:border-box;font-family:Roboto,Arial,sans-serif;color:#073f31}
+.ts-mobile-nav-drawer *{box-sizing:border-box}
+.ts-mobile-nav-heading{flex-shrink:0}
+@media(min-width:900px) and (max-width:1100px) and (orientation:landscape){header.ts-collection-header.ts-collection-header{padding:0 20px;gap:16px}.ts-collection-header>a:first-child{flex-basis:160px}.ts-collection-header .ts-desktop-tool-navigation{gap:2px}.ts-desktop-tool-navigation>a,.ts-toolkit-navigation-trigger>a{padding-left:8px;padding-right:8px}}
+@media(max-width:899px),(max-width:1199px) and (orientation:portrait){header.ts-collection-header.ts-collection-header{height:76px;min-height:76px;padding:0 18px;gap:18px}.ts-collection-header>a:first-child{flex-basis:230px}.ts-collection-header>a:first-child img{max-width:230px}}
