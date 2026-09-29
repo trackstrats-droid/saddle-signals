@@ -1,8 +1,10 @@
+import {toolAccess} from "../../../paywall/access.mjs";
 import { NextResponse } from "next/server";
 
 const DEFAULT_URL = "https://racing-data-api-production.up.railway.app";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied=await toolAccess(request,"saddle-signals");if(denied)return denied;
   const configuredUrl = process.env.RACING_DATA_API_URL || DEFAULT_URL;
   let baseUrl: URL;
   try {
@@ -36,5 +38,5 @@ export async function GET() {
     watchlists: { flat: [], jumps: [] },
     today: today.payload,
     tomorrow: tomorrow.payload,
-  }, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" } });
+  }, { headers: { "Cache-Control": process.env.APP_ENV==='staging'?"private, no-store":"public, s-maxage=120, stale-while-revalidate=600" } });
 }

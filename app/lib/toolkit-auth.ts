@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-const COOKIE = "track_strats_identity";
+const COOKIE = process.env.APP_ENV==='staging'?"track_strats_staging_identity":"track_strats_identity";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
