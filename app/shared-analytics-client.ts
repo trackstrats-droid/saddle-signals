@@ -13,6 +13,7 @@ let initialised = false;
 let viewSent = false;
 export function stopAnalytics() { if (typeof window !== 'undefined') client()?.opt_out_capturing?.(); }
 export async function startAnalytics(tool: string, viewEvent = tool + '_tool_viewed') {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('.staging.trackstrats.com')) return;
   if (!hasAnalyticsConsent()) { stopAnalytics(); return; }
   if (!initialised) {
     loading ??= new Promise<void>((resolve) => {
@@ -52,10 +53,12 @@ export async function startAnalytics(tool: string, viewEvent = tool + '_tool_vie
   }
 }
 export function trackAnalytics(tool: string, event: string, properties: Record<string, unknown> = {}) {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('.staging.trackstrats.com')) return;
   if (!hasAnalyticsConsent()) return;
   client()?.capture?.(event, { ...properties, tool });
 }
 export function identifyAnalytics(tool: string, id: string, properties: Record<string, unknown> = {}) {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('.staging.trackstrats.com')) return;
   if (!hasAnalyticsConsent()) return;
   client()?.identify?.(id, { ...properties, tool });
 }

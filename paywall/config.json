@@ -1,0 +1,7 @@
+{
+  "feature": "saddle-signals",
+  "title": "Saddle Signals",
+  "host": "saddlesignals",
+  "api": "/api/racing-data",
+  "kind": "vinext"
+}
