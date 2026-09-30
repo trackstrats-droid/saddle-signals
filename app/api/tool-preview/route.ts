@@ -1,0 +1,4 @@
+import {previewCss,previewScript} from '../../../paywall/preview.mjs';
+import config from '../../../paywall/config.json';
+export const dynamic='force-dynamic';
+export async function GET(){if((process.env.PAYWALL_MODE||'off')!=='enforce')return new Response('',{headers:{'Content-Type':'text/javascript','Cache-Control':'no-store'}});const css=JSON.stringify(previewCss);const prefix=`const style=document.createElement('style');style.textContent=${css};document.head.append(style);document.documentElement.dataset.toolFeature=${JSON.stringify(config.feature)};document.documentElement.dataset.toolLocked='503';`;return new Response(prefix+previewScript(config,'https://toolkit.trackstrats.com/verify-tool?tool='+config.feature),{headers:{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'private, no-store'}});}

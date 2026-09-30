@@ -1,8 +1,10 @@
+import {toolAccess} from "../../../paywall/access.mjs";
 import { NextResponse } from "next/server";
 
 const DEFAULT_URL = "https://racing-data-api-production.up.railway.app";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied=await toolAccess(request,"saddle-signals");if(denied)return denied;
   const configuredUrl = process.env.RACING_DATA_API_URL || DEFAULT_URL;
   let baseUrl: URL;
   try {
@@ -18,8 +20,8 @@ export async function GET() {
   let tomorrowResponse: Response;
   try {
     [todayResponse, tomorrowResponse] = await Promise.all([
-      fetch(new URL("/v1/public/saddle-signals/today", baseUrl), { signal, next: { revalidate: 120 } }),
-      fetch(new URL("/v1/public/saddle-signals/tomorrow", baseUrl), { signal, next: { revalidate: 1800 } }),
+      fetch(new URL("/v1/public/saddle-signals/today", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, next: { revalidate: 120 } }),
+      fetch(new URL("/v1/public/saddle-signals/tomorrow", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, next: { revalidate: 1800 } }),
     ]);
   } catch {
     return NextResponse.json({ error: "Racing snapshots are temporarily unavailable" }, { status: 503 });
@@ -36,5 +38,5 @@ export async function GET() {
     watchlists: { flat: [], jumps: [] },
     today: today.payload,
     tomorrow: tomorrow.payload,
-  }, { headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" } });
+  }, { headers: { "Cache-Control": "private, no-store", "Vary":"Cookie" } });
 }
