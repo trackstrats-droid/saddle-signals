@@ -27,7 +27,7 @@ function render(){
  rows.innerHTML=Array.from({length:3},()=>'<div class="tool-preview-row"><span class="tool-preview-silk"></span><span class="tool-preview-lines"><i></i><i></i><i></i></span><span class="tool-preview-price"></span></div>').join('');
  const prompt=document.createElement('section');prompt.className='tool-preview-prompt';prompt.setAttribute('aria-label','Unlock selections');
  const heading=document.createElement('h2');heading.textContent=status===402?'Unlock your selections':status===401?'See your selections':'Check your access';
- const message=document.createElement('p');message.textContent=status===402?'Subscribe to Track Strats Toolkit to reveal the runners matching your filters.':status===401?'Log in or create an account to access your racing tools.':'Verify your subscription to reveal your selections.';
+ const message=document.createElement('p');message.textContent=status===402?'You need a valid Track Strats Toolkit subscription to use this tool':status===401?'Log in or create an account to access your racing tools.':'Verify your subscription to reveal your selections.';
  const link=document.createElement('a');link.textContent=status===402?'View Toolkit subscription':status===401?'Log in or create an account':'Check my access';link.href=status===402?'https://trackstrats.com/products/track-strats-toolkit':${JSON.stringify(verifyUrl)};if(status===402){link.target='_blank';link.rel='noopener noreferrer';}
  const note=document.createElement('small');note.textContent='Runner preview - selections are hidden';
  prompt.append(heading,message,link,note);preview.append(rows,prompt);host.append(preview);
