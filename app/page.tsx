@@ -1,9 +1,10 @@
 "use client";
+import ToolPreview from './tool-preview';
 import WorkspaceNavigation from './workspace-navigation';
 import {readAngleLink,angleChoice,angleNumber} from './angle-link';
 
 import { useEffect, useMemo, useState } from "react";
-import fallbackData from "./racing-data.json";
+import type fallbackData from "./racing-data.json";
 import { captureAnalytics } from "./analytics";
 import saddleSignalsLogo from "../public/saddle-signals.png";
 
@@ -18,7 +19,7 @@ const labels: Record<AlertFlag, string> = { upgrade: "Jockey upgrade", claimer: 
 const amateurTitle = /^(?:Mr|Mrs|Miss|Ms)\s/i;
 
 export default function Home() {
-  const [racingData, setRacingData] = useState<RacingData>(fallbackData);
+  const [racingData, setRacingData] = useState<RacingData>({generatedAt:'',watchlists:{flat:[],jumps:[]},today:{races:0,runners:0,courses:[],flags:[]},tomorrow:{races:0,runners:0,courses:[],flags:[]}});
   const [day, setDay] = useState<DayKey>("today");
   const [course, setCourse] = useState("all");
   const [flag, setFlag] = useState("all");
@@ -37,7 +38,7 @@ export default function Home() {
     fetch("/api/racing-data", { signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error("Snapshot unavailable")))
       .then((data: RacingData) => setRacingData(data))
-      .catch((error) => { if (error.name !== "AbortError") console.warn("Using bundled racing snapshot"); });
+      .catch((error) => { if (error.name !== "AbortError") console.warn("Racing selections unavailable"); });
     return () => controller.abort();
   }, []);
   useEffect(() => {
@@ -127,7 +128,7 @@ export default function Home() {
         <label>Market position<select value={marketPosition} onChange={(e) => { setMarketPosition(e.target.value); trackFilter("market_position", e.target.value); }}><option value="all">All market positions</option><option value="favourite">Favourite</option><option value="top3">Top 3 in betting</option><option value="midfield">Midfield</option><option value="outsider">Outsider</option></select></label>
       </div></div>
     </section>
-    <section className={`results${!session.loading && !session.authenticated ? " isLocked" : ""}`}><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
+    <section className={`results${!session.loading && !session.authenticated ? " isLocked" : ""}`}><ToolPreview/><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
       {!session.loading && !session.authenticated && <div className="resultsGate"><section className="authDialog" aria-labelledby="login-title"><h2 id="login-title">See Your Signals</h2><p>Create your free Track Strats Toolkit account or log in to reveal today’s booking signals.</p><a className="authPrimary" href="/auth/login" onClick={() => captureAnalytics("saddle_signals_login_clicked", { location: "results_gate" })}>Log in or create an account</a></section></div>}
       {sorted.length ? <div className="cards">{sorted.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>No qualifying booking changes.</strong><p>Try another day or reset the filters.</p><button onClick={reset}>Reset filters</button></div>}
     </section>
