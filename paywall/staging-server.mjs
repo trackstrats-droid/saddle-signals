@@ -107,4 +107,5 @@ export async function run(){
  for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{child?.kill(signal);server.close(()=>process.exit(0));});
  return server;
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await run();
+// Railway staging services retain an explicit start command for this entry point.
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await import('../scripts/retired-staging.mjs');
