@@ -5,7 +5,7 @@
     "buildCommand": "APP_ENV=staging npm run build"
   },
   "deploy": {
-    "startCommand": "APP_ENV=staging node paywall/staging-server.mjs",
+    "startCommand": "APP_ENV=staging node scripts/retired-staging.mjs",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
