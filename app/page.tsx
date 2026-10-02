@@ -11,7 +11,7 @@ import saddleSignalsLogo from "../public/saddle-signals.png";
 type DayKey = "today" | "tomorrow";
 type AlertFlag = "upgrade" | "claimer";
 type SortKey = "card" | "time_asc" | "time_desc" | "odds_asc" | "odds_desc" | "sr_desc" | "sr_asc";
-type RacingData = typeof fallbackData;
+type RacingData = Omit<typeof fallbackData, 'today' | 'tomorrow'> & { today: typeof fallbackData.today & {snapshotAvailable?: boolean}; tomorrow: typeof fallbackData.tomorrow & {snapshotAvailable?: boolean} };
 type Alert = (typeof fallbackData.tomorrow.flags)[number] & { silkUrl?: string };
 type CustomerSession = { loading: boolean; authenticated: boolean; customer?: { id: string; email?: string; firstName?: string; lastName?: string } };
 
@@ -130,7 +130,7 @@ export default function Home() {
     </section>
     <section className={`results${!session.loading && !session.authenticated ? " isLocked" : ""}`}><ToolPreview/><div className="resultsHead"><div><h2>Booking signals</h2><span className="resultCount">{sorted.length}</span></div><label className="sortControl">Sort by<select value={sortBy} onChange={(event) => { const value = event.target.value as SortKey; setSortBy(value); captureAnalytics("saddle_signals_sort_changed", { sort: value, day }); }}><option value="card">Racecard order</option><option value="time_asc">Time · earliest first</option><option value="time_desc">Time · latest first</option><option value="odds_asc">Odds · shortest first</option><option value="odds_desc">Odds · longest first</option><option value="sr_desc">Jockey SR · highest first</option><option value="sr_asc">Jockey SR · lowest first</option></select></label></div>
       {!session.loading && !session.authenticated && <div className="resultsGate"><section className="authDialog" aria-labelledby="login-title"><h2 id="login-title">See Your Signals</h2><p>Create your free Track Strats Toolkit account or log in to reveal today’s booking signals.</p><a className="authPrimary" href="/auth/login" onClick={() => captureAnalytics("saddle_signals_login_clicked", { location: "results_gate" })}>Log in or create an account</a></section></div>}
-      {sorted.length ? <div className="cards">{sorted.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>No qualifying booking changes.</strong><p>Try another day or reset the filters.</p><button onClick={reset}>Reset filters</button></div>}
+      {sorted.length ? <div className="cards">{sorted.map((item) => <AlertCard key={item.id} alert={item} day={day}/>)}</div> : <div className="empty"><strong>{current.snapshotAvailable === false ? "Runners for this day are not available yet." : "No qualifying booking changes."}</strong><p>{current.snapshotAvailable === false ? "Please check back after the next racing data update." : "Try another day or reset the filters."}</p><button onClick={reset}>Reset filters</button></div>}
     </section>
     <footer><strong>TRACK STRATS // RACING TOOLKIT</strong><span>Saddle Signals</span></footer>
   </main>;

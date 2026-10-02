@@ -1,5 +1,6 @@
 import {toolAccess} from "../../../paywall/access.mjs";
 import { NextResponse } from "next/server";
+import { combineSnapshots } from './snapshots.mjs';
 
 const DEFAULT_URL = "https://racing-data-api-production.up.railway.app";
 
@@ -26,17 +27,6 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json({ error: "Racing snapshots are temporarily unavailable" }, { status: 503 });
   }
-  if (!todayResponse.ok || !tomorrowResponse.ok) {
-    return NextResponse.json({ error: "Racing snapshots are not available yet" }, { status: 503 });
-  }
-  const [today, tomorrow] = await Promise.all([todayResponse.json(), tomorrowResponse.json()]);
-  if (!today?.payload?.flags || !tomorrow?.payload?.flags) {
-    return NextResponse.json({ error: "Racing snapshot format is invalid" }, { status: 502 });
-  }
-  return NextResponse.json({
-    generatedAt: today.date,
-    watchlists: { flat: [], jumps: [] },
-    today: today.payload,
-    tomorrow: tomorrow.payload,
-  }, { headers: { "Cache-Control": "private, no-store", "Vary":"Cookie" } });
+  const result = await combineSnapshots(todayResponse, tomorrowResponse);
+  return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "private, no-store", "Vary":"Cookie" } });
 }
