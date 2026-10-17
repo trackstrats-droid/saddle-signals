@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import MobileNavigation from './workspace-mobile-navigation';
 import {captureAnalytics as trackNavigation} from './analytics';
-const tools=[['Racecards','racecards'],['Race Scanner','racescanner'],['Market Movers','marketmovers'],['Ahead Of The Mark','aheadofthemark'],['Furthest From Home','furthestfromhome'],['Saddle Signals','saddlesignals'],['Pace Profiler','paceprofiler']];
+const tools=[['Racecards','racecards'],['Race Scanner','racescanner'],['Market Movers','marketmovers'],['Ahead Of The Mark','aheadofthemark'],['Furthest From Home','furthestfromhome'],['Saddle Signals','saddlesignals'],['Pace Profiler','paceprofiler'],['Trainer Jockey Combos','tjcombos']];
 export default function DesktopNavigation(){
  const [open,setOpen]=useState(false),[signed,setSigned]=useState(false);
  const root=useRef<HTMLDivElement>(null),toggle=useRef<HTMLButtonElement>(null);
