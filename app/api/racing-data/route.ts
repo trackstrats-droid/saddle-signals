@@ -21,8 +21,8 @@ export async function GET(request: Request) {
   let tomorrowResponse: Response;
   try {
     [todayResponse, tomorrowResponse] = await Promise.all([
-      fetch(new URL("/v1/public/saddle-signals/today", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, next: { revalidate: 120 } }),
-      fetch(new URL("/v1/public/saddle-signals/tomorrow", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, next: { revalidate: 1800 } }),
+      fetch(new URL("/v1/public/saddle-signals/today", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, cache: 'no-store' }),
+      fetch(new URL("/v1/public/saddle-signals/tomorrow", baseUrl), { signal, redirect:'error', headers:{'X-Track-Strats-Key':process.env.DATA_SERVICE_TOKEN||''}, cache: 'no-store' }),
     ]);
   } catch {
     return NextResponse.json({ error: "Racing snapshots are temporarily unavailable" }, { status: 503 });
