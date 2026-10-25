@@ -18,6 +18,17 @@ type CustomerSession = { loading: boolean; authenticated: boolean; customer?: { 
 const labels: Record<AlertFlag, string> = { upgrade: "Jockey upgrade", claimer: "New claimer" };
 const amateurTitle = /^(?:Mr|Mrs|Miss|Ms)\s/i;
 
+function formatRaceDistance(value: string) {
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)f$/i);
+  if (!match) return value;
+  const totalYards = Math.round(Number(match[1]) * 220);
+  const miles = Math.floor(totalYards / 1760);
+  const remainingYards = totalYards % 1760;
+  const furlongs = Math.floor(remainingYards / 220);
+  const yards = remainingYards % 220;
+  return `${miles ? `${miles}m` : ""}${furlongs ? `${furlongs}f` : ""}${yards ? `${yards}y` : ""}`;
+}
+
 export default function Home() {
   const [racingData, setRacingData] = useState<RacingData>({generatedAt:'',watchlists:{flat:[],jumps:[]},today:{races:0,runners:0,courses:[],flags:[]},tomorrow:{races:0,runners:0,courses:[],flags:[]}});
   const [day, setDay] = useState<DayKey>("today");
@@ -141,7 +152,7 @@ function AlertCard({ alert, day }: { alert: Alert; day: DayKey }) {
   const racecardUrl = `https://racecards.trackstrats.com/?day=${day}&race=${encodeURIComponent(raceId)}#racecard`;
   return <article className="runner">
     <div className="raceLine"><span>{alert.offTime}</span><strong>{alert.course}</strong><small>{alert.raceName}</small></div>
-    <div className="runnerMain"><div className="number">{alert.horseNumber || "–"}</div><Silk alert={alert}/><div className="horse"><p>{alert.trainer}</p><h3><a href={racecardUrl} target="_blank" rel="noopener noreferrer" onClick={() => captureAnalytics("saddle_signals_racecard_opened", { day, race_id: raceId, course: alert.course, off_time: alert.offTime, signal: alert.flags.join(",") })} aria-label={`Open the ${alert.offTime} ${alert.course} racecard in a new tab`}>{alert.horse}</a></h3><span>{alert.raceType} · {alert.raceClass} · {alert.distance}</span></div>{alert.bestOdds && <div className="bestOdds" title={alert.bestOdds.isStartingPrice ? `Starting price: ${alert.bestOdds.fractional}` : `Best bookmaker price: ${alert.bestOdds.fractional} with ${alert.bestOdds.bookmaker}`}><small>{alert.bestOdds.isStartingPrice ? "SP" : "BEST ODDS"}</small><strong>{alert.bestOdds.fractional}</strong>{!alert.bestOdds.isStartingPrice && <span>{alert.bestOdds.bookmaker}</span>}</div>}</div>
+    <div className="runnerMain"><div className="number">{alert.horseNumber || "–"}</div><Silk alert={alert}/><div className="horse"><p>{alert.trainer}</p><h3><a href={racecardUrl} target="_blank" rel="noopener noreferrer" onClick={() => captureAnalytics("saddle_signals_racecard_opened", { day, race_id: raceId, course: alert.course, off_time: alert.offTime, signal: alert.flags.join(",") })} aria-label={`Open the ${alert.offTime} ${alert.course} racecard in a new tab`}>{alert.horse}</a></h3><span>{alert.raceType} · {alert.raceClass} · {formatRaceDistance(alert.distance)}</span></div>{alert.bestOdds && <div className="bestOdds" title={alert.bestOdds.isStartingPrice ? `Starting price: ${alert.bestOdds.fractional}` : `Best bookmaker price: ${alert.bestOdds.fractional} with ${alert.bestOdds.bookmaker}`}><small>{alert.bestOdds.isStartingPrice ? "SP" : "BEST ODDS"}</small><strong>{alert.bestOdds.fractional}</strong>{!alert.bestOdds.isStartingPrice && <span>{alert.bestOdds.bookmaker}</span>}</div>}</div>
     <div className="badges">{alert.flags.map((item) => <span className={item === "upgrade" ? "upgradeBadge" : "claimBadge"} key={item}>{labels[item as AlertFlag]}{item === "claimer" ? ` · ${alert.todayClaim}lb` : ""}</span>)}{alert.courseDistance && <span className="courseDistanceBadge" title={alert.courseDistance === "CD" ? "Previous course and distance winner" : alert.courseDistance === "C" ? "Previous course winner" : "Previous distance winner"}>{alert.courseDistance}</span>}</div>
     <div className="comparison"><div><small>LAST TIME OUT</small><strong>{alert.ltoJockey}</strong></div><i aria-hidden="true">→</i><div><small>TODAY</small><div className="jockeyLine"><strong>{alert.todayJockey}</strong><JockeyStat stats={alert.jockey30Day}/></div></div></div>
     <div className="cardFoot"><div><span>LTO finish</span><strong>{alert.ltoPosition || "–"}/{alert.ltoFieldSize || "–"}</strong></div><div className={alert.sameCourse ? "matchedCondition" : ""}><span>Course</span><strong>{alert.ltoCourse}</strong></div><div className={alert.sameDistance ? "matchedCondition" : ""}><span>Distance</span><strong>{alert.ltoDistance}</strong></div></div>
