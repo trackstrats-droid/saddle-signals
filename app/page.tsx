@@ -125,6 +125,7 @@ export default function Home() {
       <p className="eyebrow">{day.toUpperCase()}’S BOOKINGS · {current.races} RACES</p>
       <h1 className="scannerTitle"><span>Saddle</span> <em>Signals</em></h1>
       <p className="intro">Spot potentially significant jockey changes, from leading riders taking over to claimers brought in to reduce the weight.</p>
+      <a className="heroVideoLink" href="https://youtu.be/LlXuvB4cMak?si=ur1WHjVDMT3Kb_Pc" target="_blank" rel="noopener noreferrer" onClick={() => captureAnalytics("saddle_signals_demo_video_clicked", { location: "hero" })}>Watch the tool in action <span aria-hidden="true">▶</span></a>
     </div><div className="heroStat"><strong>{current.runners}</strong><span>RUNNERS<br/>CHECKED {day.toUpperCase()}</span></div></section>
     <section className="filterShell">
       <div className="filterTop"><div><h2>Filters</h2><span className="countPill">{activeCount} active</span></div><button className="textBtn" onClick={reset}>Reset</button></div>
