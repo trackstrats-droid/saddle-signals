@@ -2,6 +2,8 @@
 import ToolPreview from './tool-preview';
 import WorkspaceNavigation from './workspace-navigation';
 import {readAngleLink,angleChoice,angleNumber} from './angle-link';
+import SaveAngle from './save-angle';
+import {savedFilters} from './save-angle-model';
 
 import { useEffect, useMemo, useState } from "react";
 import type fallbackData from "./racing-data.json";
@@ -128,7 +130,7 @@ export default function Home() {
       <a className="heroVideoLink" href="https://youtu.be/LlXuvB4cMak?si=ur1WHjVDMT3Kb_Pc" target="_blank" rel="noopener noreferrer" onClick={() => captureAnalytics("saddle_signals_demo_video_clicked", { location: "hero" })}>Watch the tool in action <span aria-hidden="true">▶</span></a>
     </div><div className="heroStat"><strong>{current.runners}</strong><span>RUNNERS<br/>CHECKED {day.toUpperCase()}</span></div></section>
     <section className="filterShell">
-      <div className="filterTop"><div><h2>Filters</h2><span className="countPill">{activeCount} active</span></div><button className="textBtn" onClick={reset}>Reset</button></div>
+      <div className="filterTop"><div><h2>Filters</h2><span className="countPill">{activeCount} active</span></div><div className="filterActions"><button className="textBtn" onClick={reset}>Reset</button><SaveAngle filters={savedFilters({course,raceType,signal:flag,courseForm:courseDistance,ltoResult,jockey,jockeySr:jockeyStrikeRate,marketPosition,sort:sortBy})} defaultName={flag==='upgrade'?'Jockey upgrades':flag==='claimer'?'New claimers':''}/></div></div>
       <div className="filterBody"><div className="selectGrid">
         <label>Course<select value={course} onChange={(e) => { setCourse(e.target.value); trackFilter("course", e.target.value); }}><option value="all">All courses</option>{courses.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label>Race type<select value={raceType} onChange={(e) => { setRaceType(e.target.value); trackFilter("race_type", e.target.value); }}><option value="all">All race types</option><option value="Flat">Flat</option><option value="Hurdle">Hurdle</option><option value="Chase">Chase</option><option value="NH Flat">NH Flat</option></select></label>
